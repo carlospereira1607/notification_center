@@ -1,1 +1,1 @@
-mod rest;
+pub mod rest;
