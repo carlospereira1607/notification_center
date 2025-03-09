@@ -16,7 +16,6 @@ impl From<Notification> for NotificationEntity {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::service::clock_service::ClockService;
     use super::*;
     use crate::domain::model::notification::Notification;
 
