@@ -1,4 +1,4 @@
-use crate::configuration::structs::AppConfiguration;
+use crate::application::configuration::structs::AppConfiguration;
 use config::{Config, ConfigError, Environment, File};
 
 pub fn load_config() -> Result<AppConfiguration, ConfigError> {

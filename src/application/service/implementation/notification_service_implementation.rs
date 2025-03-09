@@ -1,5 +1,5 @@
 use crate::adapter::outgoing::persistence::entity::notification_entity::NotificationEntity;
-use crate::application::error::ServiceError;
+use crate::application::error::ApplicationError;
 use crate::application::service::notification_service::NotificationServicePort;
 use crate::domain::model::notification::Notification;
 use crate::port::outgoing::persistence::notification_repository_port::NotificationRepositoryPort;
@@ -18,34 +18,37 @@ impl<R: NotificationRepositoryPort + Sync + Send> NotificationServiceImplementat
 
 #[async_trait]
 impl<R: NotificationRepositoryPort + Sync + Send> NotificationServicePort for NotificationServiceImplementation<R> {
-    async fn create_notification(&self, message: String) -> Result<Notification, ServiceError> {
+    async fn create_notification(&self, message: String) -> Result<Notification, ApplicationError> {
         let notification = Notification::new(message);
         let notification_entity: NotificationEntity = notification.clone().into();
         self.notification_repository.save(&notification_entity).await?;
         Ok(notification)
     }
 
-    async fn get_notification(&self, uuid: Uuid) -> Result<Notification, ServiceError> {
-        let notification_entity = self.notification_repository.get(&uuid).await?;
+    async fn get_notification(&self, uuid: String) -> Result<Notification, ApplicationError> {
+        let parsed_uuid = Uuid::parse_str(uuid.as_str()).unwrap();
+        let notification_entity = self.notification_repository.get(&parsed_uuid).await?;
         Ok(notification_entity.into())
     }
 
-    async fn list_notifications(&self) -> Result<Vec<Notification>, ServiceError> {
+    async fn list_notifications(&self) -> Result<Vec<Notification>, ApplicationError> {
         let notification_entities = self.notification_repository.get_all().await?;
         let notifications = notification_entities.into_iter().map(|entity| entity.into()).collect();
         Ok(notifications)
     }
 
-    async fn mark_as_seen(&self, uuid: Uuid) -> Result<bool, ServiceError> {
-        let notification_entity = self.notification_repository.get(&uuid).await?;
+    async fn mark_as_seen(&self, uuid: String) -> Result<bool, ApplicationError> {
+        let parsed_uuid = Uuid::parse_str(uuid.as_str()).unwrap();
+        let notification_entity = self.notification_repository.get(&parsed_uuid).await?;
         let mut notification: Notification = notification_entity.into();
         notification.set_as_seen();
         let updated_entity: NotificationEntity = notification.into();
         Ok(self.notification_repository.save(&updated_entity).await?.seen)
     }
 
-    async fn delete_notification(&self, uuid: Uuid) -> Result<bool, ServiceError> {
-        let notification_entity = self.notification_repository.get(&uuid).await?;
+    async fn mark_as_deleted(&self, uuid: String) -> Result<bool, ApplicationError> {
+        let parsed_uuid = Uuid::parse_str(uuid.as_str()).unwrap();
+        let notification_entity = self.notification_repository.get(&parsed_uuid).await?;
         let mut notification: Notification = notification_entity.into();
         notification.set_as_deleted();
         let updated_entity: NotificationEntity = notification.into();
@@ -88,6 +91,7 @@ mod tests {
 
         let message = notification.message.clone().to_string();
         let uuid_to_look_for = notification.uuid.clone();
+        let uuid_to_look_for_as_string = notification.uuid.to_string().clone();
 
         let mut mocked_repo = MockNotificationRepositoryPort::new();
         mocked_repo.expect_get()
@@ -96,7 +100,7 @@ mod tests {
 
         let notification_service = NotificationServiceImplementation::new(mocked_repo);
 
-        let result = notification_service.get_notification(uuid_to_look_for.clone()).await;
+        let result = notification_service.get_notification(uuid_to_look_for_as_string.clone()).await;
 
         let result = result.unwrap();
 
@@ -165,7 +169,7 @@ mod tests {
 
         let service = NotificationServiceImplementation::new(mock_repo);
 
-        let uuid_to_search_for = notification.uuid.clone();
+        let uuid_to_search_for = notification.uuid.to_string();
         let result = service.mark_as_seen(uuid_to_search_for).await;
 
         assert!(result.is_ok());
@@ -197,8 +201,8 @@ mod tests {
 
         let service = NotificationServiceImplementation::new(mock_repo);
 
-        let uuid_to_search_for = notification.uuid.clone();
-        let result = service.delete_notification(uuid_to_search_for).await;
+        let uuid_to_search_for = notification.uuid.to_string();
+        let result = service.mark_as_deleted(uuid_to_search_for).await;
 
         assert!(result.is_ok());
         assert!(result.unwrap());
