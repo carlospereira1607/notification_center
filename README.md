@@ -19,3 +19,4 @@ Improvements:
     - [ ] to create notifications
     - [ ] to send notifications
 - [ ] integration tests
+- [ ] small refactors
