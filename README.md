@@ -4,6 +4,7 @@ Simple Rust application to manage notifications.
 
 TODO:
 
+- [ ] use app configurations
 - [ ] add DB layer
 - [ ] containerize DB
 - [ ] handle errors
