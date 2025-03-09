@@ -1,7 +1,7 @@
 app:
   incoming:
     rest:
-      port: ${APP_PORT:-8080}
+      port: ${INCOMING_REST_PORT:-8080}
 
 database:
   url: ${DATABASE_URL:-"postgres://user:password@localhost:5432/notification_center_db"}
