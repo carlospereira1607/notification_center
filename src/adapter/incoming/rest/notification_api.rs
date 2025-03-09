@@ -68,3 +68,144 @@ pub fn create_router(state: Arc<AppState>) -> Router {
         .route("/notification/deleted/{uuid}", post(mark_as_deleted))
         .with_state(state)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::adapter::incoming::rest::notification_api::NotificationApi;
+    use crate::adapter::incoming::rest::request::create_notification::CreateNotificationRequest;
+    use crate::application::configuration::application_state::AppState;
+    use crate::application::service::notification_service::MockNotificationServicePort;
+    use crate::domain::model::notification::Notification;
+    use axum::extract::State;
+    use axum::Json;
+    use mockall::predicate::eq;
+    use std::sync::Arc;
+    use uuid::Uuid;
+
+    #[tokio::test]
+    async fn test_create_notification_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        let notification = Notification::new("test message".to_string());
+        let request = CreateNotificationRequest {
+            message: "test message".to_string(),
+        };
+
+        mock_service
+            .expect_create_notification()
+            .with(eq("test message".to_string()))
+            .returning(move |_| Ok(notification.clone()));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = create_notification(State(app_state), Json(request)).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().0.message, "test message");
+    }
+
+    #[tokio::test]
+    async fn test_get_notification_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        let uuid = Uuid::new_v4().to_string();
+        let notification = Notification::new("existing message".to_string());
+
+        mock_service
+            .expect_get_notification()
+            .with(eq(uuid.clone()))
+            .returning(move |_| Ok(notification.clone()));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = get_notification(State(app_state), Path(uuid)).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().0.message, "existing message");
+    }
+
+    #[tokio::test]
+    async fn test_get_notifications_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        mock_service
+            .expect_list_notifications()
+            .returning(move || Ok(
+                vec![
+                    Notification::new("message 1".to_string()),
+                    Notification::new("message 2".to_string()),
+                ]
+            ));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = get_notifications(State(app_state)).await;
+
+        assert!(result.is_ok());
+        let response = result.unwrap().0;
+        assert_eq!(response.len(), 2);
+        assert_eq!(response[0].message, "message 1");
+        assert_eq!(response[1].message, "message 2");
+    }
+
+    #[tokio::test]
+    async fn test_get_notifications_empty_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        mock_service
+            .expect_list_notifications()
+            .returning(move || Ok(vec![]));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = get_notifications(State(app_state)).await;
+
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap().0.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_mark_as_seen_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        let uuid = Uuid::new_v4().to_string();
+
+        mock_service
+            .expect_mark_as_seen()
+            .with(eq(uuid.clone()))
+            .returning(move |_| Ok(true));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = mark_as_seen(State(app_state), Path(uuid)).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().0);
+    }
+
+    #[tokio::test]
+    async fn test_mark_as_deleted_success() {
+        let mut mock_service = MockNotificationServicePort::new();
+        let uuid = Uuid::new_v4().to_string();
+
+        mock_service
+            .expect_mark_as_deleted()
+            .with(eq(uuid.clone()))
+            .returning(move |_| Ok(true));
+
+        let app_state = Arc::new(AppState {
+            notification_api: Arc::new(NotificationApi::new(Arc::new(mock_service))),
+        });
+
+        let result = mark_as_deleted(State(app_state), Path(uuid)).await;
+
+        assert!(result.is_ok());
+        assert!(result.unwrap().0);
+    }
+}

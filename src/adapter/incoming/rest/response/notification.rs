@@ -4,7 +4,7 @@ use serde::Serialize;
 #[derive(Debug, Serialize)]
 pub struct NotificationResponse {
     uuid: String,
-    message: String,
+    pub(crate) message: String,
     seen: bool,
     deleted: bool,
 }

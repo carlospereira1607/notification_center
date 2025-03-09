@@ -1,7 +1,9 @@
 use crate::application::error::ApplicationError;
 use crate::domain::model::notification::Notification;
 use async_trait::async_trait;
+use mockall::automock;
 
+#[automock]
 #[async_trait]
 pub trait NotificationServicePort: Send + Sync {
     async fn create_notification(&self, message: String) -> Result<Notification, ApplicationError>;
