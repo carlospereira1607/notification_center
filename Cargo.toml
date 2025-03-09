@@ -9,3 +9,6 @@ config = "0.15.9"
 async-trait = "0.1.87"
 uuid = { version = "1.15.1", features = ["v4"] }
 chrono = "0.4.40"
+thiserror = "2.0.12"
+mockall = "0.13.1"
+tokio = { version = "1.44.0", features = ["full"] }

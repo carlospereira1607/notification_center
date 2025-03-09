@@ -35,14 +35,14 @@ mod tests {
     #[test]
     fn test_notification_to_entity_mapping() {
         let notification = Notification::new("some message".to_string());
-        let entity: NotificationEntity = notification.clone().into();
+        let result: NotificationEntity = notification.clone().into();
 
-        assert_eq!(entity.uuid, notification.uuid);
-        assert_eq!(entity.message, notification.message);
-        assert_eq!(entity.seen, notification.seen);
-        assert_eq!(entity.deleted, notification.deleted);
-        assert_eq!(entity.date_created, notification.date_created);
-        assert_eq!(entity.last_updated, notification.last_updated);
+        assert_eq!(result.uuid, notification.uuid);
+        assert_eq!(result.message, notification.message);
+        assert_eq!(result.seen, notification.seen);
+        assert_eq!(result.deleted, notification.deleted);
+        assert_eq!(result.date_created, notification.date_created);
+        assert_eq!(result.last_updated, notification.last_updated);
     }
 
     #[test]

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NotificationEntity {
     pub uuid: Uuid,
     pub message: String,
