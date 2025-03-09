@@ -3,10 +3,10 @@ use uuid::Uuid;
 
 #[derive(Debug)]
 pub struct NotificationEntity {
-    id: Uuid,
-    message: String,
-    seen: bool,
-    deleted: bool,
-    date_created: DateTime<Utc>,
-    last_updated: DateTime<Utc>,
+    pub uuid: Uuid,
+    pub message: String,
+    pub seen: bool,
+    pub deleted: bool,
+    pub date_created: DateTime<Utc>,
+    pub last_updated: DateTime<Utc>,
 }
