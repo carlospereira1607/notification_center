@@ -6,3 +6,6 @@ edition = "2021"
 [dependencies]
 serde = { version = "1.0.218", features = ["derive"] }
 config = "0.15.9"
+async-trait = "0.1.87"
+uuid = { version = "1.15.1", features = ["v4"] }
+chrono = "0.4.40"
