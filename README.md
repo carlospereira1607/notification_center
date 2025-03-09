@@ -12,6 +12,8 @@ TODO:
     - [ ] to create notifications
     - [ ] to send notifications
 - [ ] documentation
+- [ ] code coverage - cargo-tarpaulin
+- [ ] integration tests
 
 Improvements:
 
@@ -19,5 +21,4 @@ Improvements:
     - [ ] restrict notifications based on user
     - [ ] manage user authentication
 
-- [ ] integration tests
 - [ ] small refactors
